@@ -4,9 +4,10 @@
 #include <STC12C5A60S2.H>
 #include <string.h>
 #include <intrins.h>
+#include <stdio.h>
 
-sbit SDA	= P1 ^ 3;
-sbit SCL	= P1 ^ 5;
+sbit SDA	= P0 ^ 1;
+sbit SCL	= P0 ^ 0;
 
 #define _Nop() _nop_() /*定义空指令*/
 #define I2C_DELAY delay_ms(1)
@@ -41,19 +42,14 @@ static void i2c_stop(void) {
 }
 
 static void i2c_sendack(void) {
-	SCL = 0;
-	_Nop();
 	SDA = 0;
-	_Nop();
 	SCL = 1;
 	_Nop();
 	_Nop();
 	_Nop();
 	_Nop();
 	_Nop();
-	_Nop();
 	SCL = 0;
-	_Nop();
 }
 
 static void i2c_waitack(void) {
@@ -156,7 +152,7 @@ unsigned char * i2c_read(u8 *val, u16 n, u16 addr) {
 	i2c_sendbyte(ST24C512_ADDR | 1);
 	i2c_waitack();
 
-	n -= 1;
+	n--;
 	while (n--) {
 		*val = i2c_recvbyte();
 		i2c_sendack();
@@ -172,34 +168,18 @@ unsigned char * i2c_read(u8 *val, u16 n, u16 addr) {
 }
 
 
-sbit GREEN 	= P1 ^ 0;
-sbit YELLOW	= P1 ^ 1;
-
 void i2c_init(void) {
 	char tmp_w[] = "test line 2";
 	char tmp_r[] = "aaaa aaaa a";
 	u8 i;
 
-	P1M0	= 0xD4;		//将P1.3, P1.5配置成标准IO口模式
-	P1M1	= 0x03;
-
-	YELLOW = 0;
-	GREEN = 0;
-
-	//i2c_write(&tmp_w[0], sizeof(tmp_w), 0);
+	
+	i2c_write(&tmp_w[0], sizeof(tmp_w), 0);
 
 	for (i = 0; i < sizeof(tmp_w); i++) 
-		;//i2c_read(&tmp_r[i], 1, i);
+		i2c_read(&tmp_r[i], 1, i);
 	//i2c_read(&tmp_r[0], sizeof(tmp_r), 0);
 
-	usart_send(tmp_r, sizeof(tmp_r));
+	printf("i2c:%s\n", tmp_r);
 
-	if ( memcmp(tmp_w, tmp_r, sizeof(tmp_w)) != 0) {
-		YELLOW = 1;
-		while (1);
-	} else {
-		GREEN = 1;
-		while (1);
-	}
-	
 }

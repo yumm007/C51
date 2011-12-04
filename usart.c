@@ -3,21 +3,33 @@
 #include "i2c.h"
 #include <STC12C5A60S2.H>
 
+static u8  xdata usart_buf[USART_BUF_SIZE + 1] = {0};
+static u8 buf_p = 0;
+
+bool USART_RCV_FLAG = FALSE;
+static bool flag = FALSE;
+
 static void usart_rcv_(void ) interrupt 4 using 1 {
-//	unsigned char UART_data; //定义串口接收数据变量
-//	RI = 0;			//令接收中断标志位为0（软件清零）
-//	UART_data = SBUF;	//将接收到的数据送入变量 UART_data
-//		
-//	SBUF = UART_data;	//将接收的数据发送回去（删除//即生效）
-//	while(TI == 0);	//检查发送中断标志位
-//	TI = 0;		//令发送中断标志位为0（软件清零）
+	u8 rcv;
+
+	if (!RI)
+		return;
+	
+	RI = 0;			//令接收中断标志位为0（软件清零）
+	
+	usart_buf[buf_p++] = rcv = SBUF;	//将接收到的数据送入变量 
+
+	if (rcv == '\r')
+		flag = TRUE;
+	else if ((rcv == '\n' && flag == TRUE) || buf_p == USART_BUF_SIZE) {
+		USART_RCV_FLAG = TRUE;
+		flag	= FALSE;
+	} else
+		flag	= FALSE;	
 }
 
 void usart_init(void) {
-	//EA = 1; //允许总中断（如不使用中断，可用//屏蔽）
-	//ES = 1; //允许UART串口的中断
 
-	//AUXR = 0x40;	//1T模式
 	TMOD = 0x20;	//定时器1 工作方式2
 	SCON = 0x50;	//串口工作方式1，允许串口接收（SCON = 0x40 时禁止串口接收）
 	TH1 = 0xf3;	//定时器初值高8位设置
@@ -26,6 +38,8 @@ void usart_init(void) {
 	TI	= 1;
 	TR1 = 1;	//定时器启动
 
+	buf_p = 0;
+	USART_RCV_FLAG = FALSE;
 }
 
 void usart_send(const char *buf, int n) {
@@ -55,6 +69,11 @@ void usart_send(const char *buf, int n) {
 	}
 }
 
-void usart_recv(char *buf, int n) {
-	;
+char * usart_recv(void) {
+
+	usart_buf[buf_p] = '\0';
+	buf_p = 0;
+	USART_RCV_FLAG = FALSE;
+
+	return usart_buf;
 }
