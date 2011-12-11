@@ -12,7 +12,9 @@ sbit CS	= P0 ^ 5;	 //片选为1
 
 #define  LEDDATA P2
 
-static void led_ready(void) {
+static u8 led_offset = 0;
+
+static u8 led_ready(void) {
 	u8 val;
 	
 	do {
@@ -48,10 +50,28 @@ static void led_send_data(u8 val) {
 }
 
 void led_print(char *str) {
-	led_send_cmd(0x06); //自动移位
 	while (*str) {
 		led_send_data(*str++);
+		led_offset++;
+		if (led_offset > 0x0f && !(led_offset & 0x40))
+			set_xy(1,0);
+		else if (led_offset > 0x4f)
+			set_xy(0,0);
 	}
+}
+
+void set_xy(u8 x, u8 y) {
+	u8 add = (x == 0 ? 0 : 0x40);
+	add |= (y < 16 ? y : 16);
+
+	led_offset = add;
+	led_send_cmd(0x80 | add);
+
+}
+
+void led_clr(void) {
+	led_send_cmd(0x01);
+	led_offset = 0;
 }
 
 void led_init(void) {
@@ -62,12 +82,11 @@ void led_init(void) {
 
 	led_send_cmd(0x38);	//8位格式，2行，5*7
 	led_send_cmd(0x08);	//关闭显示
-	led_send_cmd(0x01);	//清除显示
 	
 	led_send_cmd(0x06);	//设置输入格式，增量不移位
 	led_send_cmd(0x0c);	//整体显示，关光标，不闪烁
 	
-	led_send_cmd(0x80); //显示位置
+	led_clr();			//清除显示
 
 	return;
 }

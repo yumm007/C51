@@ -3,5 +3,7 @@
 
 void led_init(void);
 void led_print(char *str);
+void set_xy(u8 x, u8 y);
+void led_clr(void);
 
 #endif

@@ -17,7 +17,7 @@ void main(void) {
    
    led_init();
    i2c_init();
-   led_print("os start");
+   led_print("OS Start!");
 
    EA = 1; //允许总中断（如不使用中断，可用//屏蔽）
    ES = 1; //允许UART串口的中断
