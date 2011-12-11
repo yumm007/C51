@@ -1,6 +1,7 @@
 #include <STC12C5A60S2.H>
 #include "lib.h"
 #include "usart.h"
+#include "spi.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -31,11 +32,12 @@ enum {
 #define CLR_BIT_SPI(x) 	(SPCTL &= (~(x)))
 #define SET_BIT_SPI(x)	(SPCTL |= (x))
 
+#define PAGE_MASK	(~(PAGE_SIZE-1))
+
 //默认配置：启用SPI，为主设备， SS引脚不用, P1.5,P1.7 为输出，P1.6为输入
 //1/4分频，先发高位，空闲时SPICLK为低电平
 #define SPI_DEF_VAL (0x00 | SSIG | MSTR | SPEN | CPOL | CPHA)
 #define SPI_DUMMY	0x5a
-#define PAGE_SIZE	256
 
 static u8 spi_send_byte(u8 val) {
 
@@ -96,45 +98,37 @@ static u8 spi_sta(void) {
 static char  xdata page_buf[PAGE_SIZE];	//页缓存地址
 //考虑随机地址读得问题
 
-static spi_read_page(u32 addr) {
+static void spi_read_page(u32 addr) {
 	u16 i = 0;
 	SS = 0;
 	spi_send_byte(FAST_READ);
 	spi_send_byte((addr & 0xff0000) >> 16);
 	spi_send_byte((addr & 0x00ff00) >> 8);
-	spi_send_byte(0);
+	spi_send_byte(addr & 0x0000ff);
 	spi_send_byte(SPI_DUMMY);
 	for (i = 0; i < PAGE_SIZE; i++)
 		page_buf[i] =  spi_recv_byte();
 	SS = 1;	
 }
 
-//比如要从地址123连续读256或者513...个字节，
-int spi_read(u32 addr, char *dst, u16 buf_size) {
-	u16 start = addr, end = addr + buf_size;
+//读是可以一直读的
+int spi_read(u32 addr, char *dst, u32 buf_size) {
+	//u32 start = addr, end = dst + buf_size;
 	u32 i;
-
-	//if ((start & 0xffff00) == (end & 0xffff00))	//说明在同一页中
-	{
-		spi_read_page(start & 0xffff00);
-		memcpy(dst, &page_buf[start & 0x0000ff], buf_size);
-		return;	
-	}
 	
-//	//先拷头
-//	spi_read_page(start & 0xffff00);
-//	memcpy(dst, &page_buf[start & 0x0000ff], PAGE_SIZE - (start & 0x0000ff));
-//	//再拷尾
-//	spi_read_page(end & 0xffff00);
-//	memcpy((char *)((end >> 8) * PAGE_SIZE) , &page_buf[end & 0x0000ff], end & 0x0000ff);
-//	//中间
-//	start = ((start + 0xff) / PAGE_SIZE) * PAGE_SIZE ;	//向上对齐
-//	dst	  = ((d + 0xff) / PAGE_SIZE) * PAGE_SIZE ;	//向上对齐
-//	end	  = end & 0xffff00;								//向下对齐
-//	for (i = start; i < end; i += PAGE_SIZE) {
-//		 spi_read_page(i & 0xffff00);
-//		 memcpy((char *)i, page_buf, PAGE_SIZE);
-//	}	
+	SS = 0;
+	spi_send_byte(FAST_READ);
+	spi_send_byte((addr & 0xff0000) >> 16);
+	spi_send_byte((addr & 0x00ff00) >> 8);
+	spi_send_byte(addr & 0x0000ff);
+
+	spi_send_byte(SPI_DUMMY);
+	for (i = 0; i < buf_size; i++)
+		dst[i] =  spi_recv_byte();
+	SS = 1;	
+
+	return 0;
+
 }
 
 //一次最多写256个字节
@@ -157,7 +151,7 @@ static void spi_erase_page(u32 addr) {
 	spi_send_byte(SECTOR_ERASE);
 	spi_send_byte((addr & 0xff0000) >> 16);
 	spi_send_byte((addr & 0x00ff00) >> 8);
-	spi_send_byte(0);
+	spi_send_byte(addr & 0x0000ff);
 	SS = 1;
 
 	do {
@@ -184,54 +178,35 @@ static void spi_write_page(u32 addr, const char *src) {
 	} while (ret & SPI_BUSY);	
 }
 
+//不支持跨区写
+
 int spi_write(u32 addr, const char *src, u16 len) {
-	u16 start = addr, end = addr + len;
-	u32 i;
+	if ( (addr & 0xfff) + len > PAGE_SIZE)
+		len = PAGE_SIZE - (addr & 0xfff);
 
-	if ((start & 0xffff00) == (end & 0xffff00))	//说明在同一页中
-	{
-		spi_read_page(start);
-		spi_erase_page(addr);
-		memcpy(&page_buf[start & 0x0000ff], src, len);
-		spi_write_page(addr, page_buf);
-		return;	
-	}
+	spi_read_page(addr & 0xfffff000);
+	spi_erase_page(addr & 0xfffff000);
+	memcpy(&page_buf[addr & 0xfff], src, len);
+	spi_write_page(addr & 0xfffff000, page_buf);
 
-//	//先写头
-//	spi_read_page(start);
-//	spi_erase_page(start);
-//	memcpy(&page_buf[start & 0x0000ff], start, PAGE_SIZE - (start & 0x0000ff));
-//	spi_write_page(start, page_buf);
-//	//再写尾
-//	spi_read_page(end);
-//	spi_erase_page(end);
-//	memcpy(&page_buf[end & 0x0000ff], (char *)((end >> 8) * PAGE_SIZE) ,  end & 0x0000ff);
-//	spi_write_page(end, page_buf);
-//	//然后是中间
-//	start = ((start + 0xff) / PAGE_SIZE) * PAGE_SIZE ;	//向上对齐
-//	end	  = end & 0xffff00;								//向下对齐
-//	for (i = start; i < end; i += PAGE_SIZE) {
-//		 spi_read_page(i);
-//		 spi_erase_page(i);
-//		 memcpy(page_buf, (char *)i, PAGE_SIZE);
-//		 spi_write_page(i, page_buf);
-//	}
+	return 0;
 }
 
 void spi_deinit(void) {
 	DISABLE_SPI;
 }
 
+#define TEST_LINE  "this line will be write to spi flash.\n"
 void spi_init(void) {
-	char xdata tmp[50] = "aaaa aaaa aaaa\n";
+	//char xdata tmp[50] = "aaaa aaaa aaaa\n";
 
 	SPCTL 	= 	SPI_DEF_VAL;
 	SPSTAT 	=  	SPIF | ECOL;
 
-	printf("\"ef16\"\t.spi device id:0x%x, status: %d\n", spi_device_id(), (u32)spi_sta());
-
-	spi_write(0, "this line will be write to spi flash.\n", strlen("this line will be write to spi flash.\n"));
+	printf("spi device id:0x%x\n", spi_device_id());
+	//spi_erase_page(0);
+	//spi_write(22,TEST_LINE , strlen(TEST_LINE));
 	//delay_ms(1000);
-	spi_read(0, tmp , strlen("this line will be write to spi flash.\n"));
-	printf("%s", tmp);
+	//spi_read(22, tmp , strlen(TEST_LINE));
+	//printf("%s", tmp);
 }
