@@ -6,7 +6,6 @@
 void usart_init(void);
 void usart_send(const char *buf, int n);
 char * usart_recv(void);
-
 extern bool USART_RCV_FLAG;
 
 #endif

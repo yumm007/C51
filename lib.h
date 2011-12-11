@@ -1,13 +1,15 @@
 #ifndef __LIB_H_
 #define __LIB_H_
 
-typedef enum {TRUE = 1, FALSE = 0} bool;
+typedef enum {FALSE = 0, TRUE = !FALSE} bool;
 typedef unsigned char uchar;
 typedef unsigned char u8;
 typedef unsigned short u16;
 typedef unsigned int u32;
 
+#ifndef NULL
 #define NULL	0
+#endif
 
 enum {
 	BIT0 = 1<<0,
@@ -19,6 +21,7 @@ enum {
 	BIT6 = 1<<6,
 	BIT7 = 1<<7,
 };
+#define _Nop() _nop_() /*¶¨Òå¿ÕÖ¸Áî*/
 
 void delay_ms(unsigned int n);
 

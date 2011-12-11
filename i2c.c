@@ -9,7 +9,6 @@
 sbit SDA	= P0 ^ 1;
 sbit SCL	= P0 ^ 0;
 
-#define _Nop() _nop_() /*∂®“Âø’÷∏¡Ó*/
 #define I2C_DELAY delay_ms(1)
 
 static bool i2c_free(void) {
