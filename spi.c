@@ -5,9 +5,9 @@
 #include <string.h>
 #include <stdio.h>
 
-sbit MISO 	= P1 ^ 6;
-sbit MOSI 	= P1 ^ 5;
-sbit SPICLK = P1 ^ 7;
+//sbit MISO 	= P1 ^ 6;
+//sbit MOSI 	= P1 ^ 5;
+//sbit SPICLK = P1 ^ 7;
 sbit SS		= P1 ^ 4;
 
 //SPDAT	: Êý¾Ý¼Ä´æÆ÷
@@ -39,7 +39,7 @@ enum {
 #define SPI_DEF_VAL (0x00 | SSIG | MSTR | SPEN | CPOL | CPHA)
 #define SPI_DUMMY	0x5a
 
-static u8 spi_send_byte(u8 val) {
+u8 spi_send_byte(u8 val) {
 
 	SPSTAT = SPIF | ECOL;
 	SPDAT = val;
@@ -50,7 +50,7 @@ static u8 spi_send_byte(u8 val) {
 	return SPDAT;
 }
 
-static u8 spi_recv_byte(void) {
+u8 spi_recv_byte(void) {
 	return spi_send_byte(SPI_DUMMY);
 }
 

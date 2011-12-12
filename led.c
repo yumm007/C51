@@ -14,7 +14,7 @@ sbit CS	= P0 ^ 5;	 //ƬѡΪ1
 
 static u8 led_offset = 0;
 
-static u8 led_ready(void) {
+static void led_ready(void) {
 	u8 val;
 	
 	do {

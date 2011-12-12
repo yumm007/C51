@@ -5,6 +5,7 @@
 #include "string.h"
 #include "spi.h"
 #include "led.h"
+#include "nrf24l01.h"
 #include <stdio.h>
 
 void main(void) {
@@ -18,6 +19,7 @@ void main(void) {
    led_init();
    i2c_init();
    led_print("OS Start!");
+   init_nrf24l01_new();
 
    EA = 1; //允许总中断（如不使用中断，可用//屏蔽）
    ES = 1; //允许UART串口的中断

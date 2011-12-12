@@ -6,4 +6,7 @@
 void spi_init(void);
 void spi_deinit(void);
 
+u8 spi_send_byte(u8 val);
+u8 spi_recv_byte(void);
+
 #endif
