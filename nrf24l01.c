@@ -42,26 +42,12 @@ static void sleep_mode(void) {
 static void print_pipi0_addr(void) {
 	u8 val = 0;
 	NRF_CS = 0;
-	//spi_send_byte(0xA5);
-	spi_send_byte(0xa);
-	//delay_ms(1);
-	//spi_send_byte(5);
-	//spi_send_byte(0x01);
-	//add[4] = spi_recv_byte();
-	//add[3] = spi_recv_byte();
-	//add[2] = spi_recv_byte();
-	//add[1] = spi_recv_byte();
+	spi_send_byte(0x0);
 	val = spi_recv_byte();
 	NRF_CS = 1;
 	printf("nRF24L01 reg val: 0x%x\n",(u32)val);
 }
 
 void init_nrf24l01(void) {
-	
-	//NRF_CS = 0;
-
-	//while(1);
-
-	//sleep_mode();
 	print_pipi0_addr();
 }

@@ -34,9 +34,9 @@ enum {
 
 #define PAGE_MASK	(~(PAGE_SIZE-1))
 
-//默认配置：启用SPI，为主设备， SS引脚不用, P1.5,P1.7 为输出，P1.6为输入
-//1/4分频，先发高位，空闲时SPICLK为低电平
-#define SPI_DEF_VAL (0x00 | SSIG | MSTR | SPEN | CPOL | CPHA)
+//默认配置：启用SPI，为主设备， SS引脚不用
+//1/4分频，先发高位，空闲时SPICLK为高电平， 数据在前时钟沿驱动，后时钟源采样
+#define SPI_DEF_VAL (0x00 | SSIG | MSTR | SPEN) //(0x00 | SSIG | MSTR | SPEN | CPOL | CPHA)
 #define SPI_DUMMY	0x5a
 
 u8 spi_send_byte(u8 val) {
