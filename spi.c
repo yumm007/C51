@@ -203,7 +203,7 @@ void spi_init(void) {
 	SPCTL 	= 	SPI_DEF_VAL;
 	SPSTAT 	=  	SPIF | ECOL;
 
-	printf("spi device id:0x%x\n", spi_device_id());
+	//printf("spi device id:0x%x\n", spi_device_id());
 	//spi_erase_page(0);
 	//spi_write(22,TEST_LINE , strlen(TEST_LINE));
 	//delay_ms(1000);

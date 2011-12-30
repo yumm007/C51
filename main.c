@@ -8,8 +8,6 @@
 #include "nrf24l01.h"
 #include <stdio.h>
 
-sbit INT0 = P3 ^ 2;
-
 void main(void) {
   
    usart_init();
@@ -29,7 +27,9 @@ void main(void) {
    //这个函数会初始化接收缓冲区
    usart_recv(); 
 
-   nrf24l01_send("send from wireless\n", strlen("send from wireless\n"));
+#ifdef RECVER   
+   recv_status();
+#endif
 
    while (1) {  		
 		if (USART_RCV_FLAG)
@@ -39,13 +39,19 @@ void main(void) {
 			send_flag = FALSE;	
 		}
 		if (recv_flag) {
-			printf("recv_flag\n");
+			printf("recv_flag: %s\n", nrf24l01_recv());
 			recv_flag = FALSE;	
 		}
 		if (rety_flag) {
 			printf("rety_flag\n");
 			rety_flag = FALSE;	
 		}
-
+#ifdef SENDER
+	   delay_ms(40);
+	   led_clr();
+	   delay_ms(40);
+	   led_print("send_msg");
+	   nrf24l01_send("send from wireless\n", strlen("send from wireless\n"));
+#endif 
    }
 }
