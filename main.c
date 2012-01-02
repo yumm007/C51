@@ -6,18 +6,33 @@
 #include "spi.h"
 #include "led.h"
 #include "nrf24l01.h"
+#include "zx12864.h"
 #include <stdio.h>
 
 void main(void) {
-  
+
+#ifdef SENDER
+   char msg[50];
+   int i = 0;
+#endif
+
    usart_init();
    delay_ms(150);
    printf("os start\n");
    
-   spi_init();   
+   spi_init();
+
+#ifdef RECVER
+	zx12864_init();
+	//lcd_init();
+#endif
+
+#ifdef SENDER    
    led_init();
    i2c_init();
    led_print("OS Start!");
+#endif
+
    init_nrf24l01();
 
    EA = 1; //允许总中断（如不使用中断，可用//屏蔽）
@@ -46,12 +61,14 @@ void main(void) {
 			printf("rety_flag\n");
 			rety_flag = FALSE;	
 		}
-#ifdef SENDER
-	   delay_ms(40);
+		delay_ms(80);
+#ifdef SENDER	   
+	   sprintf(msg, "send via wireless: %d", i);
+	   printf("usart: %s\n", msg);
 	   led_clr();
-	   delay_ms(40);
-	   led_print("send_msg");
-	   nrf24l01_send("send from wireless\n", strlen("send from wireless\n"));
+	   led_print(msg);
+	   nrf24l01_send(msg, strlen(msg));
+	   i++;
 #endif 
    }
 }

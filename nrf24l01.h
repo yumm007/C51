@@ -1,8 +1,8 @@
 #ifndef __LIB_NRF24L01_H__
 #define __LIB_NRF24L01_H__
 
-#define SENDER
-//#define RECVER
+//#define SENDER
+#define RECVER
 
 #ifdef SENDER
 #define LCL_ADDR	{0XE7, 0XE7, 0XE7, 0XE7, 0XE7}
