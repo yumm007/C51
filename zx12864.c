@@ -84,7 +84,7 @@ void zx12864_init(void) {
 	led_set(0x30);	//基本
 	led_set(0x0c);
 	led_set(0x01);
-	zled_print("OS Start!");
+	zled_print("系统起来拉");
 
 	return;
 }

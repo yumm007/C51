@@ -1,6 +1,8 @@
 #ifndef __LIB_H_
 #define __LIB_H_
 
+#include <intrins.h>
+
 typedef enum {FALSE = 0, TRUE = !FALSE} bool;
 typedef unsigned char uchar;
 typedef unsigned char u8;
@@ -21,8 +23,10 @@ enum {
 	BIT6 = 1<<6,
 	BIT7 = 1<<7,
 };
+
 #define _Nop() _nop_() /*¶¨Òå¿ÕÖ¸Áî*/
 
 void delay_ms(unsigned int n);
+void delay_us(unsigned int n);
 
 #endif

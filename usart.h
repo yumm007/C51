@@ -1,6 +1,8 @@
 #ifndef __LIB_USART_H__
 #define __LIB_USART_H__
 
+#include "lib.h"
+
 #define USART_BUF_SIZE	64
 
 void usart_init(void);
