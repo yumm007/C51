@@ -19,8 +19,9 @@ void main(void) {
 #endif
 
    usart_init();
-   delay_ms(150);
+   delay_ms(450);
    printf("os start\n");
+
    //infrared_init();
    //spi_init();
    //init_ds18b20();
@@ -36,12 +37,12 @@ void main(void) {
 
    //init_nrf24l01();
    //init_ds18b20();
-   EA = 1; //允许总中断（如不使用中断，可用//屏蔽）
-   ES = 1; //允许UART串口的中断
+   //EA = 1; //允许总中断（如不使用中断，可用//屏蔽）
+   //ES = 1; //允许UART串口的中断
    
    //貌似一打开中断，就会产生一个串口中断,
    //这个函数会初始化接收缓冲区
-   usart_recv(); 
+   //usart_recv(); 
 
 #ifdef RECVER   
    recv_status();
@@ -49,7 +50,7 @@ void main(void) {
    
 
    while (1) {
-   		init_ds18b20();  		
+   		printf("read tmp = %f.\n", read_tmp());  		
 		if (USART_RCV_FLAG)
 			printf("usart recv:%s", usart_recv());
 		if (send_flag) {
@@ -66,7 +67,6 @@ void main(void) {
 		}
 		delay_ms(10);
 		//start_once_adc();
-		//printf("while\n");
 #ifdef SENDER	   
 	   sprintf(msg, "send via wireless: %d", i);
 	   printf("usart: %s\n", msg);

@@ -12,8 +12,9 @@ static bool flag = FALSE;
 static void usart_rcv_(void ) interrupt 4 using 1 {
 	u8 rcv;
 
-	if (!RI)
+	if (!RI) {
 		return;
+	}
 	
 	RI = 0;			//令接收中断标志位为0（软件清零）
 	

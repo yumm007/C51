@@ -9,9 +9,8 @@ void delay_ms(unsigned int n) {
 }
 
 void delay_us(unsigned int n) {
-	//n *=4;
+	//n *= 12 / 2;
 	while (n--) {
-		_nop_();
-		_nop_();
+		;
 	}
 }
