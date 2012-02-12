@@ -13,6 +13,8 @@ typedef unsigned int u32;
 #define NULL	0
 #endif
 
+#define FOSC	12000000L
+
 enum {
 	BIT0 = 1<<0,
 	BIT1 = 1<<1,
@@ -26,7 +28,16 @@ enum {
 
 #define _Nop() _nop_() /*定义空指令*/
 
+void delay_init(void);
 void delay_ms(unsigned int n);
 void delay_us(unsigned int n);
 
+//for循环体累加4条，比较3条，跳转1条，初始化4条；
+
+#define delay_us_1(n) {\
+	unsigned int x = n;	\
+	while (x--)	\
+		;	\
+	}
+	
 #endif

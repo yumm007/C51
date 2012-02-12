@@ -18,7 +18,10 @@ void main(void) {
    int i = 0;
 #endif
 
+   delay_us(480);
+
    usart_init();
+   delay_init();
    delay_ms(450);
    printf("os start\n");
 
@@ -65,7 +68,6 @@ void main(void) {
 			printf("rety_flag\n");
 			rety_flag = FALSE;	
 		}
-		delay_ms(10);
 		//start_once_adc();
 #ifdef SENDER	   
 	   sprintf(msg, "send via wireless: %d", i);

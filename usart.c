@@ -11,7 +11,7 @@ static bool flag = FALSE;
 
 static void usart_rcv_(void ) interrupt 4 using 1 {
 	u8 rcv;
-
+	
 	if (!RI) {
 		return;
 	}
@@ -31,11 +31,11 @@ static void usart_rcv_(void ) interrupt 4 using 1 {
 
 void usart_init(void) {
 
-	TMOD = 0x20;	//定时器1 工作方式2
-	SCON = 0x50;	//串口工作方式1，允许串口接收（SCON = 0x40 时禁止串口接收）
+	TMOD |= 0x20;	//定时器1 工作方式2
+	SCON |= 0x50;	//串口工作方式1，允许串口接收（SCON = 0x40 时禁止串口接收）
 	TH1 = 0xf3;	//定时器初值高8位设置
 	TL1 = 0xf3;	//定时器初值低8位设置
-	PCON = 0x80;	//波特率倍频（屏蔽本句波特率为2400）
+	PCON |= 0x80;	//波特率倍频（屏蔽本句波特率为2400）
 	TI	= 1;
 	TR1 = 1;	//定时器启动
 

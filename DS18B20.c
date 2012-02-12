@@ -72,7 +72,6 @@ float read_tmp(void) {
 	write_byte(CMD_CONV);
 
 	delay_ms(1000);
-	delay_ms(1000);
 
  	reset_ds18b20();
 	write_byte(CMD_SKIP_ID);
