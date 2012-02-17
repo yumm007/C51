@@ -10,6 +10,7 @@
 #include "infrared.h"
 #include "DS18B20.h"
 #include <stdio.h>
+#include "lcd.h"
 
 void main(void) {
 
@@ -50,10 +51,10 @@ void main(void) {
 #ifdef RECVER   
    recv_status();
 #endif
-   
+   LCD_Lib_Initial();
 
    while (1) {
-   		printf("read tmp = %f.\n", read_tmp());  		
+   		//printf("read tmp = %f.\n", read_tmp());  		
 		if (USART_RCV_FLAG)
 			printf("usart recv:%s", usart_recv());
 		if (send_flag) {
