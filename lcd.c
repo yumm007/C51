@@ -38,7 +38,7 @@ void lcd_lib_reset(void) {
 }
 
 static u16 read_lcd_id(u16 reg) {
-	u16 val = 0xffff, i;
+	u16 val = 0xffff;
 
 	LCD_RD_HIGH;	//RD一直为高
 
@@ -194,12 +194,18 @@ void LCD_Lib_Initial(void)
  }
 
 
+#define START_WRITE_LCD {LCD_RD_HIGH; LCD_DC_HIGH; LCD_CS_LOW;}
+#define SEND_NEXT_LCD(x) {LCD_WR_LOW;LCD_WR_HIGH;}
+#define END_WRITE_LCD {LCD_CS_HIGH; LCD_DC_HIGH;}
+
  void LCD_Clear(u16 Color)
 {
     int i, j;
     MainLCD_Window_Set(0,0,SCREEN_ROW-1,SCREEN_LINE-1);
+	START_WRITE_LCD;
+	send_val_to_bus(Color);
     for(j = 0; j < SCREEN_ROW; j++)
 	 	for(i = 0; i < SCREEN_LINE; i++)
-	   	   write_lcddata(Color);
-
+			SEND_NEXT_LCD(Color);	
+   END_WRITE_LCD;
 }

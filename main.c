@@ -24,7 +24,7 @@ void main(void) {
    usart_init();
    delay_init();
    delay_ms(450);
-   printf("os start\n");
+   //printf("os start\n");
 
    //infrared_init();
    //spi_init();
@@ -51,12 +51,12 @@ void main(void) {
 #ifdef RECVER   
    recv_status();
 #endif
-   LCD_Lib_Initial();
+   //LCD_Lib_Initial();
 
    while (1) {
    		//printf("read tmp = %f.\n", read_tmp());  		
-		if (USART_RCV_FLAG)
-			printf("usart recv:%s", usart_recv());
+		//if (USART_RCV_FLAG)
+		//	printf("usart recv:%s", usart_recv());
 		if (send_flag) {
 			printf("send_flag\n");
 			send_flag = FALSE;	

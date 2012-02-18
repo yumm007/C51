@@ -2,6 +2,7 @@
 #include "usart.h"
 #include "i2c.h"
 #include <STC12C5A60S2.H>
+#include <stdio.h>
 
 static u8  xdata usart_buf[USART_BUF_SIZE + 1] = {0};
 static u8 buf_p = 0;
@@ -26,7 +27,11 @@ static void usart_rcv_(void ) interrupt 4 using 1 {
 		USART_RCV_FLAG = TRUE;
 		flag	= FALSE;
 	} else
-		flag	= FALSE;	
+		flag	= FALSE;
+		
+	if (USART_RCV_FLAG) {
+		printf("%s", usart_recv());
+	}	
 }
 
 void usart_init(void) {
