@@ -96,7 +96,7 @@ static void cal_lca(FONT_TYPE_T font_type, int *row, int *lines) {
 
 ////从字库中取出当前字的点阵, 并返回总共的字节数
 static void SST25_R_BLOCK(int offset, unsigned char *bit_buf, int len) {
-    FILE *fp = fopen("font.bin", "r");
+    FILE *fp = fopen("new_font.bin", "r");
     if (fp == NULL) {
 	fprintf(stderr, "open font.bin error.\n");
     }
@@ -138,33 +138,6 @@ static int get_bitmap(FONT_TYPE_T font_type, unsigned char *bit_buf, const unsig
 
     SST25_R_BLOCK(offset, bit_buf, len);
     return len;
-}
-
-
-//从点阵中按行的顺序，返回第i个字节;
-static unsigned char get_byte(FONT_TYPE_T font_type, int i, const unsigned char *bit_buf) {
-    char ret = 0;
-    switch (font_type) {
-	case ASC_12:
-	case ASC_16:			
-	case HZK_16:
-	case ASC_24:
-	    ret = bit_buf[i];			
-	    break;
-	case HZK_24:
-	    //先取第0,3,6,9,12,15,18,21字节的最高位拼成一个字节，作为第一个字节返回
-	    //再接取24,27, 30, 33字节的第7位作为第二个字节返回
-	    // i/3 等于取第几列，(i % 3) * 8 * 3 等于首个bit位的位置行
-	    {
-		int i1 = (i % 3) *24, mask = 1 << (7 - (i/3)%8), j;
-		for (j = 0; j < 8; j++, ret <<= 1)
-		    ret |= (bit_buf[i1 + j * 3] & mask);	
-	    }		
-	    break;
-	default:
-	    break;	
-    }
-    return ret;
 }
 
 //从低位到高位，位为0表示描背景色，位为1表示为字体颜色；
@@ -228,13 +201,9 @@ void lcd_print(FONT_SIZE_T size, int row, int lines, const unsigned char *str) {
 	//从字库中取出当前字的点阵, 并返回总共的字节数
 	j = get_bitmap(font_type, bit_buf, str);
 
-	for (i = 0; i < j; i++) {
-	    //从点阵中按行的顺序，返回第i个字节;
-	    tmp =get_byte(font_type, i, bit_buf);
-
+	for (i = 0; i < j; i++) 
 	    //从低位到高位，位为0表示描背景色，位为1表示为字体颜色；
-	    send_8bit(font_type, tmp);
-	}
+	    send_8bit(font_type, bit_buf[i]);
 
 	//row, line始终指向下一个空白位置,可能换行也可能跳到行首
 	str = is_hz ? str + 2 : str + 1;	//指向下一个字符
@@ -245,9 +214,9 @@ void lcd_print(FONT_SIZE_T size, int row, int lines, const unsigned char *str) {
 
 int main(void) {
     unsigned char tmp[] = {0xCE, 0xD2, 0xC3, 0xC7, 0x00 }; //汉字GB2312 "我们"
-    //lcd_print(FONT_12, 0, 0, "abced");
-    //lcd_print(FONT_16, 0, 0, "abced");
-    //lcd_print(FONT_24, 0, 0, "abced");
+    lcd_print(FONT_12, 0, 0, "abced");
+    lcd_print(FONT_16, 0, 0, "abced");
+    lcd_print(FONT_24, 0, 0, "abced");
     lcd_print(FONT_16, 0, 0, tmp);
     lcd_print(FONT_24, 0, 0, tmp);
     return 0;
