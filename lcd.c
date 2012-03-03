@@ -73,7 +73,7 @@ static u16 read_lcd_id(u16 reg) {
 	return val;
 }
 
-void write_lcddata(u16 x){
+void write_lcddata(unsigned short x){
 	LCD_RD_HIGH;	//RD一直为高
 
 	LCD_DC_HIGH;
@@ -133,6 +133,7 @@ void write_reg(u16 reg, u16 val)
 }
 
 extern void LCD_Clear(u16 Color);
+void LCD_Draw_Rectangle(u16 startx, u16 starty, u16 endx, u16 endy);
 
 void LCD_Lib_Initial(void)
 {
@@ -175,12 +176,13 @@ void LCD_Lib_Initial(void)
 	write_reg(0x0022, NO_DATA);
 
 	//printf("init cmp.\n");
-	while (1) {
-		LCD_Clear(Green);
-		LCD_Clear(Red);
+	//while (1) {
+		//LCD_Clear(Green);
+		//LCD_Clear(Red);
 		LCD_Clear(Blue);
-	}
+	//}
 	//printf("screen clear.\n");
+	//LCD_Draw_Rectangle(10, 20, 40, 60);
 }
 
  void MainLCD_Window_Set(unsigned short sax, unsigned short say, unsigned short eax, unsigned short eay)
@@ -198,8 +200,7 @@ void LCD_Lib_Initial(void)
 #define SEND_NEXT_LCD(x) {LCD_WR_LOW;LCD_WR_HIGH;}
 #define END_WRITE_LCD {LCD_CS_HIGH; LCD_DC_HIGH;}
 
- void LCD_Clear(u16 Color)
-{
+void LCD_Clear(u16 Color){
     int i, j;
     MainLCD_Window_Set(0,0,SCREEN_ROW-1,SCREEN_LINE-1);
 	START_WRITE_LCD;
@@ -209,3 +210,9 @@ void LCD_Lib_Initial(void)
 			SEND_NEXT_LCD(Color);	
    END_WRITE_LCD;
 }
+
+
+void start_write_lcd(void) {LCD_RD_HIGH; LCD_DC_HIGH; LCD_CS_LOW;}
+void send_next_lcd(u16 x) {LCD_WR_LOW;send_val_to_bus(x);LCD_WR_HIGH;}
+void end_write_lcd(void) {LCD_CS_HIGH; LCD_DC_HIGH;}
+

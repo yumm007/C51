@@ -27,7 +27,7 @@ void main(void) {
    //printf("os start\n");
 
    //infrared_init();
-   //spi_init();
+   spi_init();
    //init_ds18b20();
 //#ifdef RECVER
    //zx12864_init();
@@ -51,7 +51,8 @@ void main(void) {
 #ifdef RECVER   
    recv_status();
 #endif
-   //LCD_Lib_Initial();
+   LCD_Lib_Initial();
+   print_test();
 
    while (1) {
    		//printf("read tmp = %f.\n", read_tmp());  		

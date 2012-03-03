@@ -8,7 +8,7 @@
 //sbit MISO 	= P1 ^ 6;
 //sbit MOSI 	= P1 ^ 5;
 //sbit SPICLK = P1 ^ 7;
-sbit SS		= P1 ^ 4;
+sbit SS		= P3 ^ 6;
 
 //SPDAT	: 数据寄存器
 //SPCTL ：SPI 控制寄存器
@@ -82,6 +82,7 @@ static u16 spi_device_id(void) {
 #define SECTOR_ERASE	0x20
 #define	FAST_READ		0x0B
 #define	PAGE_PROGRAM	0x02
+#define NORMAL_READ		0x03
 
 #define SPI_BUSY		BIT0
 
@@ -112,15 +113,16 @@ static void spi_read_page(u32 addr) {
 }
 
 //读是可以一直读的
-int spi_read(u32 addr, char *dst, u32 buf_size) {
+int spi_read(u16 addr_h, u16 addr_l, char *dst, u32 buf_size) {
 	//u32 start = addr, end = dst + buf_size;
 	u32 i;
 	
 	SS = 0;
 	spi_send_byte(FAST_READ);
-	spi_send_byte((addr & 0xff0000) >> 16);
-	spi_send_byte((addr & 0x00ff00) >> 8);
-	spi_send_byte(addr & 0x0000ff);
+	//spi_send_byte(NORMAL_READ);
+	spi_send_byte(addr_h & 0xff);
+	spi_send_byte((addr_l & 0x00ff00) >> 8);
+	spi_send_byte(addr_l & 0x0000ff);
 
 	spi_send_byte(SPI_DUMMY);
 	for (i = 0; i < buf_size; i++)

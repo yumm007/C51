@@ -18,5 +18,10 @@
 #define Yellow         0xFFE0
 
 void LCD_Lib_Initial(void);
+void write_lcddata(unsigned short x);
+
+void start_write_lcd(void);
+void send_next_lcd(unsigned short x);
+void end_write_lcd(void);
 
 #endif
