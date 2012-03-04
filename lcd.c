@@ -1,6 +1,7 @@
 #include <STC12C5A60S2.H>
 #include "lcd.h"
 #include "lib.h"
+#include "font.h"
 #include <stdio.h>
 
 #define DL	P0
@@ -211,8 +212,51 @@ void LCD_Clear(u16 Color){
    END_WRITE_LCD;
 }
 
+void lcd_print(FONT_SIZE_T size, int row, int lines, const unsigned char *str) {
+    unsigned char is_hz;
+    unsigned char bit_buf[FONT_MAX * (FONT_MAX/8)];
+    int i, j, p;
+    FONT_TYPE_T font_type;
 
-void start_write_lcd(void) {LCD_RD_HIGH; LCD_DC_HIGH; LCD_CS_LOW;}
-void send_next_lcd(u16 x) {LCD_WR_LOW;send_val_to_bus(x);LCD_WR_HIGH;}
-void end_write_lcd(void) {LCD_CS_HIGH; LCD_DC_HIGH;}
+	unsigned short color[] = {Black, White};
 
+    while (*str != '\0') {
+		is_hz = (*str) > 0xa0 ? 1 : 0;	//判断是否为汉字	
+		//返回字体类型
+		font_type = get_word_type(size, is_hz);
+		//设置屏幕输出的起始位置
+		set_lcd_row_line(font_type, &row, &lines);
+
+		//从字库中取出当前字的点阵, 并返回总共的字节数
+		j = get_bitmap(font_type, bit_buf, str);
+		START_WRITE_LCD;
+		for (i = 0; i < j; i++) { 
+		    //从低位到高位，位为0表示描背景色，位为1表示为字体颜色；
+		    //send_8bit(font_type, bit_buf[i]);
+			//for (p = 7; p >= 0; p--)
+				//{LCD_WR_LOW;send_val_to_bus( bit_buf[i] & (1 << p) ? Black : White);LCD_WR_HIGH;}
+		   {LCD_WR_LOW;send_val_to_bus( color[ (bit_buf[i] >> 7) & 1 ]);LCD_WR_HIGH;}
+		   {LCD_WR_LOW;send_val_to_bus( color[ (bit_buf[i] >> 6) & 1 ]);LCD_WR_HIGH;}
+		   {LCD_WR_LOW;send_val_to_bus( color[ (bit_buf[i] >> 5) & 1 ]);LCD_WR_HIGH;}
+		   {LCD_WR_LOW;send_val_to_bus( color[ (bit_buf[i] >> 4) & 1 ]);LCD_WR_HIGH;}
+		   {LCD_WR_LOW;send_val_to_bus( color[ (bit_buf[i] >> 3) & 1 ]);LCD_WR_HIGH;}
+		   {LCD_WR_LOW;send_val_to_bus( color[ (bit_buf[i] >> 2) & 1 ]);LCD_WR_HIGH;}
+		   {LCD_WR_LOW;send_val_to_bus( color[ (bit_buf[i] >> 1) & 1 ]);LCD_WR_HIGH;}
+		   {LCD_WR_LOW;send_val_to_bus( color[ (bit_buf[i] >> 0) & 1 ]);LCD_WR_HIGH;}
+		}
+		END_WRITE_LCD;
+		//row, line始终指向下一个空白位置,可能换行也可能跳到行首
+		str = is_hz ? str + 2 : str + 1;	//指向下一个字符
+    }
+}
+
+int print_test(void) {
+    unsigned char tmp[] = {0xCE, 0xD2, 0xC3, 0xC7, 0x00 }; //汉字GB2312 "我们"
+    //lcd_print(FONT_12, 0, 0, "ABCDE");
+    //lcd_print(FONT_16, 0, 0, "abced");
+    //lcd_print(FONT_24, 0, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    //lcd_print(FONT_16, 0, 0, "啊爸爸把差");
+    lcd_print(FONT_16, 0, 0, "Hello World!我们永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分");
+	//printf("max val = %f.\n", 65534.0+100.0);
+    return 0;
+}

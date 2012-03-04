@@ -12,9 +12,6 @@ void delay_init(void) {
 	EA  = 1;
 }
 
-
-#if 1
-
 #define T01MS	(0xffff - FOSC / 1000)
 #define T01US	(0xffff - FOSC / 1000 /1000)
 
@@ -40,40 +37,6 @@ void delay_ms(unsigned int n) {
 	
 	TR0 = 0;	
 }
-
-//void delay_us(unsigned int n) {
-//	u16 t;
-//
-//	t =  T01US - 4 - 1 - 2 * n - 4;
-//
-//	while (n--) {
-//		//1微秒的时间
-//		TL0 = t;
-//		TH0 = (t >> 8);
-//
-//		tm0_running = 1;
-//		
-//		TR0 = 1;	//启动定时器
-//
-//		while (tm0_running)
-//			;
-//	}
-//	
-//	TR0 = 0;
-//
-//}
-
-#else
-
-void delay_ms(unsigned int n) {
-	unsigned int i;
-
-	while (n--)
-		for (i = 0; i < 600; i++)
-			;
-}
-
-#endif
 
 void delay_us(unsigned int n) {	
 	//一个while循环6条指令，差不多每条指令需要2.5个时钟周期, 即每循环一次1us

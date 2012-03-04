@@ -1,15 +1,9 @@
 #include <stdio.h>
 #include <string.h>
+#include "font.h"
 #include "lib.h"
 #include "spi.h"
 #include "lcd.h"
-
-typedef enum {
-    FONT_12	= 12,
-    FONT_16	= 16,
-    FONT_24	= 24,
-    FONT_MAX	= FONT_24,
-} FONT_SIZE_T;
 
 //typedef enum {
 #define    ASC_12_OFFS  0
@@ -19,21 +13,12 @@ typedef enum {
 #define    HZK_24_OFFS	 (HZK_16_OFFS + 267616)
 //} FONT_OFFSET_T;
 
-typedef enum {
-    ASC_12,
-    ASC_16,
-    ASC_24,
-    HZK_16,
-    HZK_24,
-    FONT_ERR,
-} FONT_TYPE_T;
-
 #define LCD_ROW	240
 #define LCD_LINE	320
 #define LCD_LINE_EMPTY	0	//字符之间隔一个像素
 
 //返回字体类型
-static FONT_TYPE_T get_word_type(FONT_SIZE_T size, unsigned char is_hz) {
+FONT_TYPE_T get_word_type(FONT_SIZE_T size, unsigned char is_hz) {
     FONT_TYPE_T ret;
 
     switch (size){
@@ -54,7 +39,7 @@ static FONT_TYPE_T get_word_type(FONT_SIZE_T size, unsigned char is_hz) {
     return ret;
 }
 
-static unsigned int get_bitmap(FONT_TYPE_T font_type, unsigned char *bit_buf, const unsigned char *str) {
+unsigned int get_bitmap(FONT_TYPE_T font_type, unsigned char *bit_buf, const unsigned char *str) {
     float offset;
 	u16 offset_h = 0, offset_l = 0; 
 	int len = 0;
@@ -62,30 +47,37 @@ static unsigned int get_bitmap(FONT_TYPE_T font_type, unsigned char *bit_buf, co
     switch (font_type) {
 	case ASC_12:
 	    len = 12 * 1;	//12的字库，实际上是12 *8 bit的
-	    offset = ASC_12_OFFS + (*str) * len;			
+	    offset = ASC_12_OFFS + (*str) * len;
+		offset_h = 0;
+		offset_l = offset;			
 	    break;
 	case ASC_16:
 	    len = 16 * 1;	//16 * 8
-	    offset = ASC_16_OFFS + (*str) * len;			
+	    offset = ASC_16_OFFS + (*str) * len;
+		offset_h = 0;
+		offset_l = offset;			
 	    break;
 	case ASC_24:
 	    len =  24 * 2; //24 * 16
-	    offset = ASC_24_OFFS + (*str) * len;			
+	    offset = ASC_24_OFFS + (*str) * len;
+		offset_h = 0;
+		offset_l = offset;			
 	    break;
 	case HZK_16:
 	    len = 16 * 2;
-	    offset = HZK_16_OFFS + (float)(94*(str[0] - 0xa0 -  1) + (float)(str[1] - 0xa0 -1)) * len;			
+	    offset = HZK_16_OFFS + (float)(94*(str[0] - 0xa0 -  1) + (float)(str[1] - 0xa0 -1)) * len;
+		offset_h = offset / 65536;
+		offset_l = (u16)offset;			
 	    break;
 	case HZK_24:
 	    len = 24 * 3;
-	    offset = HZK_16_OFFS + 267616.0 + (float)(94*(str[0] - 0xa0  - 15 - 1) + (float)(str[1] - 0xa0 -1)) * len;			
+	    offset = HZK_16_OFFS + 267616.0 + (float)(94*(str[0] - 0xa0  - 15 - 1) + (float)(str[1] - 0xa0 -1)) * len;
+		offset_h = offset / 65536;
+		offset_l = (u16)offset;			
 	    break;
 	default:
 	    break;	
     }
-
-	offset_h = offset / 65536;
-	offset_l = (u16)offset;
 
     spi_read(offset_h, offset_l, bit_buf, len);
 
@@ -98,7 +90,7 @@ static void send_8bit(FONT_TYPE_T font_type, unsigned char tmp) {
     static int j = 0;
     int flag = 0;
 
-    for (i = 7; i > 0; i--)
+    for (i = 7; i >= 0; i--)
 		printf("%s", tmp & (1 << i) ? "--" : "  ");
 
     j += 8;
@@ -132,7 +124,7 @@ static void send_8bit(FONT_TYPE_T font_type, unsigned char tmp) {
 
 //设置屏幕起始和结束为止,并将
 //row, line指向下一个空白位置,可能换行也可能跳到行首
-static void set_lcd_row_line(FONT_TYPE_T font_type, int *rows, int *lines) {
+void set_lcd_row_line(FONT_TYPE_T font_type, int *rows, int *lines) {
     extern void MainLCD_Window_Set(unsigned short sax, unsigned short say, unsigned short eax, unsigned short eay);
 	
 	int font_size_r, font_size_l, cur_row = *rows, cur_line = *lines, next_row, next_line;
@@ -169,7 +161,7 @@ static void set_lcd_row_line(FONT_TYPE_T font_type, int *rows, int *lines) {
 		cur_line += font_size_l + LCD_LINE_EMPTY;
 	}
 
-	if (cur_line > LCD_LINE) {
+	if (cur_line + font_size_l > LCD_LINE) {
 		cur_line = 0;
 		cur_row = 0;
 	}
@@ -186,43 +178,4 @@ static void set_lcd_row_line(FONT_TYPE_T font_type, int *rows, int *lines) {
     *rows = next_row;
 	*lines = cur_line;
 
-}
-
-void lcd_print(FONT_SIZE_T size, int row, int lines, const unsigned char *str) {
-    unsigned char is_hz;
-    unsigned char bit_buf[FONT_MAX * (FONT_MAX/8)];
-    int i, j, p;
-    FONT_TYPE_T font_type;
-
-    while (*str != '\0') {
-		is_hz = (*str) > 0xa0 ? 1 : 0;	//判断是否为汉字	
-		//返回字体类型
-		font_type = get_word_type(size, is_hz);
-		//设置屏幕输出的起始位置
-		set_lcd_row_line(font_type, &row, &lines);
-
-		//从字库中取出当前字的点阵, 并返回总共的字节数
-		j = get_bitmap(font_type, bit_buf, str);
-		start_write_lcd();
-		for (i = 0; i < j; i++) { 
-		    //从低位到高位，位为0表示描背景色，位为1表示为字体颜色；
-		    //send_8bit(font_type, bit_buf[i]);
-			for (p = 7; p >= 0; p--)
-				send_next_lcd( bit_buf[i] & (1 << p) ? Black : Red);
-		}
-		end_write_lcd();
-		//row, line始终指向下一个空白位置,可能换行也可能跳到行首
-		str = is_hz ? str + 2 : str + 1;	//指向下一个字符
-    }
-}
-
-int print_test(void) {
-    unsigned char tmp[] = {0xCE, 0xD2, 0xC3, 0xC7, 0x00 }; //汉字GB2312 "我们"
-    //lcd_print(FONT_12, 0, 0, "ABCDE");
-    //lcd_print(FONT_16, 0, 0, "abced");
-    //lcd_print(FONT_24, 0, 0, "abced");
-    //lcd_print(FONT_16, 0, 0, "啊爸爸把差");
-    lcd_print(FONT_24, 0, 0, "Hello World!永远不分开永远一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分");
-	//printf("max val = %f.\n", 65534.0+100.0);
-    return 0;
 }
