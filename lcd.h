@@ -19,5 +19,6 @@
 
 void LCD_Lib_Initial(void);
 void write_lcddata(unsigned short x);
-
+void MainLCD_Window_Set(unsigned short sax, unsigned short say, unsigned short eax, unsigned short eay);
+int print_test(void);
 #endif

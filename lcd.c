@@ -215,7 +215,7 @@ void LCD_Clear(u16 Color){
 void lcd_print(FONT_SIZE_T size, int row, int lines, const unsigned char *str) {
     unsigned char is_hz;
     unsigned char bit_buf[FONT_MAX * (FONT_MAX/8)];
-    int i, j, p;
+    int i, j;
     FONT_TYPE_T font_type;
 
 	unsigned short color[] = {Black, White};

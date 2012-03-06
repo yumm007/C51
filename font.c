@@ -39,38 +39,52 @@ FONT_TYPE_T get_word_type(FONT_SIZE_T size, unsigned char is_hz) {
     return ret;
 }
 
+struct __font_bit_size {
+	u8 r;		//宽度
+	u8 l;		//高度
+	u8 s;		//占用字节数
+};
+static const struct __font_bit_size font_bit_size[] = {
+	{8,12,12},		//ASC_12
+	{8,16,16},		//ASC_16
+	{16,24,48},		//ASC_24
+	{16,16,32},		//HZK_16
+	{24,24,72},		//HZK_24
+	{0,0,0},		//error
+};
+
 unsigned int get_bitmap(FONT_TYPE_T font_type, unsigned char *bit_buf, const unsigned char *str) {
     float offset;
 	u16 offset_h = 0, offset_l = 0; 
-	int len = 0;
+	int len = font_bit_size[font_type].s;
 
     switch (font_type) {
 	case ASC_12:
-	    len = 12 * 1;	//12的字库，实际上是12 *8 bit的
+	    //len = 12 * 1;	//12的字库，实际上是12 *8 bit的
 	    offset = ASC_12_OFFS + (*str) * len;
 		offset_h = 0;
 		offset_l = offset;			
 	    break;
 	case ASC_16:
-	    len = 16 * 1;	//16 * 8
+	    //len = 16 * 1;	//16 * 8
 	    offset = ASC_16_OFFS + (*str) * len;
 		offset_h = 0;
 		offset_l = offset;			
 	    break;
 	case ASC_24:
-	    len =  24 * 2; //24 * 16
+	    //len =  24 * 2; //24 * 16
 	    offset = ASC_24_OFFS + (*str) * len;
 		offset_h = 0;
 		offset_l = offset;			
 	    break;
 	case HZK_16:
-	    len = 16 * 2;
+	    //len = 16 * 2;
 	    offset = HZK_16_OFFS + (float)(94*(str[0] - 0xa0 -  1) + (float)(str[1] - 0xa0 -1)) * len;
 		offset_h = offset / 65536;
 		offset_l = (u16)offset;			
 	    break;
 	case HZK_24:
-	    len = 24 * 3;
+	    //len = 24 * 3;
 	    offset = HZK_16_OFFS + 267616.0 + (float)(94*(str[0] - 0xa0  - 15 - 1) + (float)(str[1] - 0xa0 -1)) * len;
 		offset_h = offset / 65536;
 		offset_l = (u16)offset;			
@@ -94,6 +108,7 @@ static void send_8bit(FONT_TYPE_T font_type, unsigned char tmp) {
 		printf("%s", tmp & (1 << i) ? "--" : "  ");
 
     j += 8;
+#if 0
     switch (font_type) {
 	case ASC_12:
 	    flag = j == 8;
@@ -113,6 +128,9 @@ static void send_8bit(FONT_TYPE_T font_type, unsigned char tmp) {
 	default:
 	    break;
     }
+#else
+   flag = j == font_bit_size[font_type].s;
+#endif
 
     if (flag) {
 		printf("\n");
@@ -125,10 +143,8 @@ static void send_8bit(FONT_TYPE_T font_type, unsigned char tmp) {
 //设置屏幕起始和结束为止,并将
 //row, line指向下一个空白位置,可能换行也可能跳到行首
 void set_lcd_row_line(FONT_TYPE_T font_type, int *rows, int *lines) {
-    extern void MainLCD_Window_Set(unsigned short sax, unsigned short say, unsigned short eax, unsigned short eay);
-	
 	int font_size_r, font_size_l, cur_row = *rows, cur_line = *lines, next_row, next_line;
-
+#if 0
 	switch (font_type) {
 	case ASC_12:
 	    font_size_r = 8;
@@ -155,6 +171,10 @@ void set_lcd_row_line(FONT_TYPE_T font_type, int *rows, int *lines) {
 	    font_size_l = 0;
 	    break;
     }
+#else
+	font_size_r = font_bit_size[font_type].r;
+	font_size_l = font_bit_size[font_type].l;
+#endif
 
 	if (cur_row + font_size_r > LCD_ROW) {
 		cur_row = 0;
@@ -170,7 +190,6 @@ void set_lcd_row_line(FONT_TYPE_T font_type, int *rows, int *lines) {
 	next_line =  cur_line + font_size_l;
 
 	MainLCD_Window_Set(cur_row, cur_line, next_row-1, next_line-1);
-
 
 	next_row += LCD_LINE_EMPTY;
 	next_line += LCD_LINE_EMPTY;
