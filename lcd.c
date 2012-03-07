@@ -256,7 +256,7 @@ int print_test(void) {
     //lcd_print(FONT_16, 0, 0, "abced");
     //lcd_print(FONT_24, 0, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
     //lcd_print(FONT_16, 0, 0, "啊爸爸把差");
-    lcd_print(FONT_16, 0, 0, "Hello World!我们永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分");
+    lcd_print(FONT_24, 0, 0, "Hello World!我们永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分");
 	//printf("max val = %f.\n", 65534.0+100.0);
     return 0;
 }
