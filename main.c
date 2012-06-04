@@ -24,15 +24,15 @@ void main(void) {
    usart_init();
    delay_init();
    delay_ms(450);
-   //printf("os start\n");
+   printf("os start\n");
 
    //infrared_init();
-   spi_init();
+   //spi_init();
    //init_ds18b20();
 //#ifdef RECVER
    //zx12864_init();
 //#endif
-   
+   jlx_test();	//∆¡ƒª≤‚ ‘
 #ifdef SENDER    
    led_init();
    i2c_init();
