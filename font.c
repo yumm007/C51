@@ -19,9 +19,9 @@
 
 //返回字体类型
 FONT_TYPE_T get_word_type(FONT_SIZE_T size, unsigned char is_hz) {
-    FONT_TYPE_T ret;
+  FONT_TYPE_T ret;
 
-    switch (size){
+  switch (size){
 	case FONT_12:
 	    ret = !is_hz ? ASC_12: FONT_ERR;
 	    break;
@@ -34,9 +34,9 @@ FONT_TYPE_T get_word_type(FONT_SIZE_T size, unsigned char is_hz) {
 	default:
 	    ret = FONT_ERR;
 	    break;
-    }
+  }
 
-    return ret;
+  return ret;
 }
 
 struct __font_bit_size {
@@ -55,47 +55,31 @@ static const struct __font_bit_size font_bit_size[] = {
 
 unsigned int get_bitmap(FONT_TYPE_T font_type, unsigned char *bit_buf, const unsigned char *str) {
   long int offset;
-	//u16 offset_h = 0, offset_l = 0; 
 	int len = font_bit_size[font_type].s;
 
-    switch (font_type) {
-	case ASC_12:
-	    //len = 12 * 1;	//12的字库，实际上是12 *8 bit的
-	    offset = ASC_12_OFFS + (*str) * len;
-			//offset_h = 0;
-			//offset_l = offset;			
+	switch (font_type) {
+		case ASC_12:
+			offset = ASC_12_OFFS + (*str) * len;		
 	    break;
-	case ASC_16:
-	    //len = 16 * 1;	//16 * 8
-	    offset = ASC_16_OFFS + (*str) * len;
-			//offset_h = 0;
-			//offset_l = offset;			
+		case ASC_16:
+	    offset = ASC_16_OFFS + (*str) * len;		
 	    break;
-	case ASC_24:
-	    //len =  24 * 2; //24 * 16
-	    offset = ASC_24_OFFS + (*str) * len;
-			//offset_h = 0;
-			//offset_l = offset;			
+		case ASC_24:
+	    offset = ASC_24_OFFS + (*str) * len;		
 	    break;
-	case HZK_16:
-	    //len = 16 * 2;
-	    offset = HZK_16_OFFS + (94*(str[0] - 0xa0 -  1) + (str[1] - 0xa0 -1)) * len;
-			//offset_h = offset / 65536;
-			//offset_l = (u16)offset;			
+		case HZK_16:
+	    offset = HZK_16_OFFS + (94*(str[0] - 0xa0 -  1) + (str[1] - 0xa0 -1)) * len;		
 	    break;
-	case HZK_24:
-	    //len = 24 * 3;
-	    offset = HZK_24_OFFS + (94*(str[0] - 0xa0  - 15 - 1) + (str[1] - 0xa0 -1)) * len;
-			//offset_h = offset / 65536;
-			//offset_l = (u16)offset;			
+		case HZK_24:
+	    offset = HZK_24_OFFS + (94*(str[0] - 0xa0  - 15 - 1) + (str[1] - 0xa0 -1)) * len;		
 	    break;
-	default:
+		default:
 	    break;	
-    }
+  }
 
-    spi_read(offset, bit_buf, len);
+	spi_read(offset, bit_buf, len);
 
-    return len;
+	return len;
 }
 
 //从低位到高位，位为0表示描背景色，位为1表示为字体颜色；
@@ -105,38 +89,15 @@ static void send_8bit(FONT_TYPE_T font_type, unsigned char tmp) {
     int flag = 0;
 
     for (i = 7; i >= 0; i--)
-		printf("%s", tmp & (1 << i) ? "--" : "  ");
+			printf("%s", tmp & (1 << i) ? "--" : "  ");
 
     j += 8;
-#if 0
-    switch (font_type) {
-	case ASC_12:
-	    flag = j == 8;
-	    break;
-	case ASC_16:
-	    flag = j == 8;
-	    break;
-	case ASC_24:
-	    flag = j == 16;
-	    break;
-	case HZK_16:
-	    flag = j == 16;
-	    break;
-	case HZK_24:
-	    flag = j == 24;
-	    break;
-	default:
-	    break;
-    }
-#else
-   flag = j == font_bit_size[font_type].s;
-#endif
+		flag = j == font_bit_size[font_type].s;
 
     if (flag) {
-		printf("\n");
-		j = 0;
+			printf("\n");
+			j = 0;
     }
-
 }
 
 
@@ -144,37 +105,9 @@ static void send_8bit(FONT_TYPE_T font_type, unsigned char tmp) {
 //row, line指向下一个空白位置,可能换行也可能跳到行首
 void set_lcd_row_line(FONT_TYPE_T font_type, int *rows, int *lines) {
 	int font_size_r, font_size_l, cur_row = *rows, cur_line = *lines, next_row, next_line;
-#if 0
-	switch (font_type) {
-	case ASC_12:
-	    font_size_r = 8;
-	    font_size_l = 12;
-	    break;
-	case ASC_16:
-	    font_size_r = 8;
-	    font_size_l = 16;
-	    break;
-	case ASC_24:
-	    font_size_r = 16;
-	    font_size_l = 24;
-	    break;
-	case HZK_16:
-	    font_size_r = 16;
-	    font_size_l = 16;
-	    break;
-	case HZK_24:
-	    font_size_r = 24;
-	    font_size_l = 24;
-	    break;
-	default:
-	    font_size_r = 0;
-	    font_size_l = 0;
-	    break;
-    }
-#else
+
 	font_size_r = font_bit_size[font_type].r;
 	font_size_l = font_bit_size[font_type].l;
-#endif
 
 	if (cur_row + font_size_r > LCD_ROW) {
 		cur_row = 0;
@@ -194,7 +127,7 @@ void set_lcd_row_line(FONT_TYPE_T font_type, int *rows, int *lines) {
 	next_row += LCD_LINE_EMPTY;
 	next_line += LCD_LINE_EMPTY;
 
-    *rows = next_row;
+  *rows = next_row;
 	*lines = cur_line;
 
 }

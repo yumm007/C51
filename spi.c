@@ -113,9 +113,7 @@ static void spi_read_page(u32 addr) {
 }
 
 //读是可以一直读的
-//int spi_read(u16 addr_h, u16 addr_l, char *dst, u32 buf_size) {
 int spi_read(long int addr, char *dst, u32 buf_size) {
-	//u32 start = addr, end = dst + buf_size;
 	u32 i;
 	
 	SS = 0;
@@ -131,7 +129,6 @@ int spi_read(long int addr, char *dst, u32 buf_size) {
 	SS = 1;	
 
 	return 0;
-
 }
 
 //一次最多写256个字节

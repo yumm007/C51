@@ -202,14 +202,15 @@ void LCD_Lib_Initial(void)
 #define END_WRITE_LCD {LCD_CS_HIGH; LCD_DC_HIGH;}
 
 void LCD_Clear(u16 Color){
-    int i, j;
-    MainLCD_Window_Set(0,0,SCREEN_ROW-1,SCREEN_LINE-1);
+  int i, j;
+	
+  MainLCD_Window_Set(0,0,SCREEN_ROW-1,SCREEN_LINE-1);
 	START_WRITE_LCD;
 	send_val_to_bus(Color);
-    for(j = 0; j < SCREEN_ROW; j++)
+  for(j = 0; j < SCREEN_ROW; j++)
 	 	for(i = 0; i < SCREEN_LINE; i++)
 			SEND_NEXT_LCD(Color);	
-   END_WRITE_LCD;
+  END_WRITE_LCD;
 }
 
 void lcd_print(FONT_SIZE_T size, int row, int lines, const unsigned char *str) {
@@ -220,7 +221,7 @@ void lcd_print(FONT_SIZE_T size, int row, int lines, const unsigned char *str) {
 
 	unsigned short color[] = {Black, White};
 
-    while (*str != '\0') {
+  while (*str != '\0') {
 		is_hz = (*str) > 0xa0 ? 1 : 0;	//判断是否为汉字	
 		//返回字体类型
 		font_type = get_word_type(size, is_hz);
@@ -247,7 +248,7 @@ void lcd_print(FONT_SIZE_T size, int row, int lines, const unsigned char *str) {
 		END_WRITE_LCD;
 		//row, line始终指向下一个空白位置,可能换行也可能跳到行首
 		str = is_hz ? str + 2 : str + 1;	//指向下一个字符
-    }
+ }
 }
 
 int print_test(void) {
@@ -257,6 +258,6 @@ int print_test(void) {
     //lcd_print(FONT_24, 0, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
     //lcd_print(FONT_16, 0, 0, "啊爸爸把差");
     lcd_print(FONT_24, 0, 0, "Hello World!我们永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分开永远在一起我们永远在一起永远不分");
-	//printf("max val = %f.\n", 65534.0+100.0);
+		//printf("max val = %f.\n", 65534.0+100.0);
     return 0;
 }
