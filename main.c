@@ -32,7 +32,7 @@ void main(void) {
 //#ifdef RECVER
    //zx12864_init();
 //#endif
-   jlx_test();	//фад╩╡Бйт
+   //jlx_test();	//фад╩╡Бйт
 #ifdef SENDER    
    led_init();
    i2c_init();

@@ -54,46 +54,46 @@ static const struct __font_bit_size font_bit_size[] = {
 };
 
 unsigned int get_bitmap(FONT_TYPE_T font_type, unsigned char *bit_buf, const unsigned char *str) {
-    float offset;
-	u16 offset_h = 0, offset_l = 0; 
+  long int offset;
+	//u16 offset_h = 0, offset_l = 0; 
 	int len = font_bit_size[font_type].s;
 
     switch (font_type) {
 	case ASC_12:
 	    //len = 12 * 1;	//12的字库，实际上是12 *8 bit的
 	    offset = ASC_12_OFFS + (*str) * len;
-		offset_h = 0;
-		offset_l = offset;			
+			//offset_h = 0;
+			//offset_l = offset;			
 	    break;
 	case ASC_16:
 	    //len = 16 * 1;	//16 * 8
 	    offset = ASC_16_OFFS + (*str) * len;
-		offset_h = 0;
-		offset_l = offset;			
+			//offset_h = 0;
+			//offset_l = offset;			
 	    break;
 	case ASC_24:
 	    //len =  24 * 2; //24 * 16
 	    offset = ASC_24_OFFS + (*str) * len;
-		offset_h = 0;
-		offset_l = offset;			
+			//offset_h = 0;
+			//offset_l = offset;			
 	    break;
 	case HZK_16:
 	    //len = 16 * 2;
-	    offset = HZK_16_OFFS + (float)(94*(str[0] - 0xa0 -  1) + (float)(str[1] - 0xa0 -1)) * len;
-		offset_h = offset / 65536;
-		offset_l = (u16)offset;			
+	    offset = HZK_16_OFFS + (94*(str[0] - 0xa0 -  1) + (str[1] - 0xa0 -1)) * len;
+			//offset_h = offset / 65536;
+			//offset_l = (u16)offset;			
 	    break;
 	case HZK_24:
 	    //len = 24 * 3;
-	    offset = HZK_16_OFFS + 267616.0 + (float)(94*(str[0] - 0xa0  - 15 - 1) + (float)(str[1] - 0xa0 -1)) * len;
-		offset_h = offset / 65536;
-		offset_l = (u16)offset;			
+	    offset = HZK_24_OFFS + (94*(str[0] - 0xa0  - 15 - 1) + (str[1] - 0xa0 -1)) * len;
+			//offset_h = offset / 65536;
+			//offset_l = (u16)offset;			
 	    break;
 	default:
 	    break;	
     }
 
-    spi_read(offset_h, offset_l, bit_buf, len);
+    spi_read(offset, bit_buf, len);
 
     return len;
 }

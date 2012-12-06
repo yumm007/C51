@@ -113,16 +113,17 @@ static void spi_read_page(u32 addr) {
 }
 
 //读是可以一直读的
-int spi_read(u16 addr_h, u16 addr_l, char *dst, u32 buf_size) {
+//int spi_read(u16 addr_h, u16 addr_l, char *dst, u32 buf_size) {
+int spi_read(long int addr, char *dst, u32 buf_size) {
 	//u32 start = addr, end = dst + buf_size;
 	u32 i;
 	
 	SS = 0;
 	spi_send_byte(FAST_READ);
 	//spi_send_byte(NORMAL_READ);
-	spi_send_byte(addr_h & 0xff);
-	spi_send_byte((addr_l & 0x00ff00) >> 8);
-	spi_send_byte(addr_l & 0x0000ff);
+	spi_send_byte((addr >> 16) & 0xff);
+	spi_send_byte((addr >> 8) & 0xff);
+	spi_send_byte(addr  & 0xff);
 
 	spi_send_byte(SPI_DUMMY);
 	for (i = 0; i < buf_size; i++)
